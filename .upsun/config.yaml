@@ -153,8 +153,6 @@ services:
   redis:
     type: redis:7.0 # All available versions are: 7.0, 6.2
 
-
-
 # The routes of the project.
 #
 # Each route describes how an incoming URL is going

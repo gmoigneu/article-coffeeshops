@@ -16,4 +16,3 @@ export CACHE_URL="${CACHE_SCHEME}://${CACHE_HOST}:${CACHE_PORT}"
 export REDIS_URL="$CACHE_URL"
 export QUEUE_CONNECTION="redis"
 export SESSION_DRIVER="redis"
-
