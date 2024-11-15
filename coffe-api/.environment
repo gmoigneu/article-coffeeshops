@@ -1,0 +1,18 @@
+export APP_KEY="base64:1aQ2qoIaXNPknUqBxqslXEBx2e/2Nx+IucdtpTXsnxM="
+
+# Set database environment variables
+export DB_SCHEME="pgsql"
+export DATABASE_URL="${DB_SCHEME}://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_PATH}"
+
+# Set Laravel-specific environment variables
+export DB_CONNECTION="$DB_SCHEME"
+export DB_DATABASE="$DB_PATH"
+
+# Set Cache environment variables
+export CACHE_STORE="redis"
+export CACHE_URL="${CACHE_SCHEME}://${CACHE_HOST}:${CACHE_PORT}"
+
+# Set Redis environment variables
+export REDIS_URL="$CACHE_URL"
+export QUEUE_CONNECTION="redis"
+export SESSION_DRIVER="redis"
