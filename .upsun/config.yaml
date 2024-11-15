@@ -2,7 +2,7 @@ applications:
   coffee-api:
     # Application source code directory
     source:
-      root: "/coffee-api"
+      root: "coffee-api"
 
     # The runtime the application uses.
     # Complete list of available runtimes: https://docs.upsun.com/create-apps/app-reference.html#types

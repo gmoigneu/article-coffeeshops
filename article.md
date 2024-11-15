@@ -152,3 +152,211 @@ Our REST API is ready, let's push that to our Upsun hosting.
 
 First let's create our Upsun project.
 
+```
+upsun project:create
+```
+
+<div style="position: relative; padding-bottom: 62.5%; height: 0;"><iframe src="https://www.loom.com/embed/be7b61359e064994b1f0032b723b731a?sid=d58974d6-d3f0-44cd-a63a-f0bc34bac2a7" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
+
+In the meantime we create a git repository at the root of our project. The `laravel` CLI tool automatically created one in the `coffee-api` folder so I'll remote this one.
+
+We can now set the remote our git repository to the Upsun one:
+
+```
+upsun project:set-remote [project id]
+git add .
+git commit -m "Setup base Laravel with API"
+```
+
+Before pushing our code, we now need to add our Upsun configuration in there. Refer to [our documentation](https://docs.upsun.com) if you need any help.
+
+```yaml
+applications:
+  coffee-api:
+    # Application source code directory
+    source:
+      root: "/coffee-api"
+
+    # The runtime the application uses.
+    # Complete list of available runtimes: https://docs.upsun.com/create-apps/app-reference.html#types
+    type: "php:8.3"
+
+    # Choose which container profile (ratio CPU+RAM) your app will use. Default value comes from the image itself.
+    # More information: https://docs.upsun.com/manage-resources/adjust-resources.html#adjust-a-container-profile
+    # container_profile:
+
+    # The relationships of the application with services or other applications.
+    # The left-hand side is the name of the relationship as it will be exposed
+    # to the application in the PLATFORM_RELATIONSHIPS variable. The right-hand
+    # side is in the form `<service name>:<endpoint name>`.
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#relationships
+    relationships:
+      db: "postgresql:postgresql"
+      cache: "redis:redis"
+
+
+    # Mounts define directories that are writable after the build is complete.
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#mounts
+    mounts:
+      "/.config":
+        source: "storage"
+        source_path: "config"
+
+      "bootstrap/cache":
+        source: "storage"
+        source_path: "cache"
+
+      "storage":
+        source: "storage"
+        source_path: "storage"
+
+
+
+    # The web key configures the web server running in front of your app.
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#web
+    web:
+      # Commands are run once after deployment to start the application process.
+      # More information: https://docs.upsun.com/create-apps/app-reference.html#web-commands
+      # commands:
+        # The command to launch your app. If it terminates, it’s restarted immediately.
+      #   You can use the $PORT or the $SOCKET environment variable depending on the socket family of your upstream
+      #   PHP applications run PHP-fpm by default
+      #   Read about alternative commands here: https://docs.upsun.com/languages/php.html#alternate-start-commands
+      #   start: echo 'Put your start command here'
+      # You can listen to a UNIX socket (unix) or a TCP port (tcp, default).
+      # For PHP, the defaults are configured for PHP-FPM and shouldn't need adjustment.
+      # Whether your app should speak to the webserver via TCP or Unix socket. Defaults to tcp
+      # More information: https://docs.upsun.com/create-apps/app-reference.html#where-to-listen
+      # upstream:
+      #  socket_family: unix
+      # Each key in locations is a path on your site with a leading /.
+      # More information: https://docs.upsun.com/create-apps/app-reference.html#locations
+      locations:
+        "/":
+          passthru: "/index.php"
+          root: "public"
+
+
+
+    # Alternate copies of the application to run as background processes.
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#workers
+    # workers:
+    #   horizon:
+    #     commands:
+    #       start: |
+    #         php artisan horizon
+
+    # The timezone for crons to run. Format: a TZ database name. Defaults to UTC, which is the timezone used for all logs
+    # no matter the value here. More information: https://docs.upsun.com/create-apps/timezone.html
+    # timezone: <time-zone>
+
+    # Access control for roles accessing app environments.
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#access
+    # access:
+
+    # Variables to control the environment. More information: https://docs.upsun.com/create-apps/app-reference.html#variables
+    # variables:
+    #   env:
+    #     # Add environment variables here that are static.
+    #     XDEBUG_MODE: off
+
+    # Outbound firewall rules for the application. More information: https://docs.upsun.com/create-apps/app-reference.html#firewall
+    # firewall:
+
+    # Specifies a default set of build tasks to run. Flavors are language-specific.
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#build
+    build:
+      flavor: none
+
+    # Installs global dependencies as part of the build process. They’re independent of your app’s dependencies and
+    # are available in the PATH during the build process and in the runtime environment. They’re installed before
+    # the build hook runs using a package manager for the language.
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#dependencies
+    dependencies:
+      php:
+        composer/composer: "^2"
+
+    # Hooks allow you to customize your code/environment as the project moves through the build and deploy stages
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#hooks
+    hooks:
+      # The build hook is run after any build flavor.
+      # More information: https://docs.upsun.com/create-apps/hooks/hooks-comparison.html#build-hook
+      build: |
+        set -eux
+        composer --no-ansi --no-interaction install --no-progress --prefer-dist --optimize-autoloader --no-dev
+        php artisan horizon:install
+
+      # The deploy hook is run after the app container has been started, but before it has started accepting requests.
+      # More information: https://docs.upsun.com/create-apps/hooks/hooks-comparison.html#deploy-hook
+      deploy: |
+        set -eux
+        mkdir -p storage/framework/sessions
+        mkdir -p storage/framework/cache
+        mkdir -p storage/framework/views
+        php artisan migrate --force
+        php artisan optimize:clear
+
+      # The post_deploy hook is run after the app container has been started and after it has started accepting requests.
+      # More information: https://docs.upsun.com/create-apps/hooks/hooks-comparison.html#deploy-hook
+      # post_deploy: |
+
+    # Scheduled tasks for the app.
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#crons
+    # crons:
+
+    # Customizations to your PHP or Lisp runtime. More information: https://docs.upsun.com/create-apps/app-reference.html#runtime
+    runtime:
+      extensions:
+        - redis
+        - pdo
+        - pdo_pgsql
+
+    # More information: https://docs.upsun.com/create-apps/app-reference.html#additional-hosts
+    # additional_hosts:
+
+# The services of the project.
+#
+# Each service listed will be deployed
+# to power your Upsun project.
+# More information: https://docs.upsun.com/add-services.html
+# Full list of available services: https://docs.upsun.com/add-services.html#available-services
+services:
+  postgresql:
+    type: postgresql:16 # All available versions are: 16.1, 15.1, 14.1, 13.1
+
+  redis:
+    type: redis:7.0 # All available versions are: 7.0, 6.2
+
+# The routes of the project.
+#
+# Each route describes how an incoming URL is going
+# to be processed by Upsun.
+# More information: https://docs.upsun.com/define-routes.html
+routes:
+  "https://api.{default}/":
+    type: upstream
+    upstream: "coffee-api:http"
+```
+
+We also need to map some environment variables so Laravel can configure itself properly. Create a `.environment` file with the following:
+
+```bash
+export APP_KEY="base64:[key]" # CHANGE IT!
+
+# Set database environment variables
+export DB_SCHEME="pgsql"
+export DATABASE_URL="${DB_SCHEME}://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_PATH}"
+
+# Set Laravel-specific environment variables
+export DB_CONNECTION="$DB_SCHEME"
+export DB_DATABASE="$DB_PATH"
+
+# Set Cache environment variables
+export CACHE_STORE="redis"
+export CACHE_URL="${CACHE_SCHEME}://${CACHE_HOST}:${CACHE_PORT}"
+
+# Set Redis environment variables
+export REDIS_URL="$CACHE_URL"
+export QUEUE_CONNECTION="redis"
+export SESSION_DRIVER="redis"
+```
