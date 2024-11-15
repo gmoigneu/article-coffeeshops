@@ -21,7 +21,6 @@ applications:
       db: "postgresql:postgresql"
       cache: "redis:redis"
 
-
     # Mounts define directories that are writable after the build is complete.
     # More information: https://docs.upsun.com/create-apps/app-reference.html#mounts
     mounts:
