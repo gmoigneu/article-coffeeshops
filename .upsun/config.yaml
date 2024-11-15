@@ -1,4 +1,3 @@
-# Complete list of all available properties: https://docs.upsun.com/create-apps/app-reference.html
 applications:
   coffee-api:
     # Application source code directory
@@ -19,7 +18,7 @@ applications:
     # side is in the form `<service name>:<endpoint name>`.
     # More information: https://docs.upsun.com/create-apps/app-reference.html#relationships
     relationships:
-      database: "pgsql:postgres"
+      db: "postgresql:postgresql"
       cache: "redis:redis"
 
 
@@ -136,6 +135,8 @@ applications:
     runtime:
       extensions:
         - redis
+        - pdo
+        - pdo_pgsql
 
     # More information: https://docs.upsun.com/create-apps/app-reference.html#additional-hosts
     # additional_hosts:
@@ -147,8 +148,8 @@ applications:
 # More information: https://docs.upsun.com/add-services.html
 # Full list of available services: https://docs.upsun.com/add-services.html#available-services
 services:
-  pgsql:
-    type: postgres:16.1 # All available versions are: 16.1, 15.1, 14.1, 13.1
+  postgresql:
+    type: postgresql:16 # All available versions are: 16.1, 15.1, 14.1, 13.1
 
   redis:
     type: redis:7.0 # All available versions are: 7.0, 6.2
